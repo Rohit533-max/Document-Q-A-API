@@ -1,5 +1,10 @@
-from  fastapi import FastAPI
+from  fastapi import FastAPI, HTTPException, status
+from pydantic import BaseModel
 app = FastAPI()
+
+class Note(BaseModel):
+    title:str | None = None
+    content:str | None = None
 
 notes = [
     {
@@ -34,12 +39,37 @@ def get_by_id(id:int):
     return "Invalid Value!"
 
 
-@app.put("/{idx}")
-def put_val(idx:int):
-    for note in notes:
-        if note["id"] == idx:
-            note["title"] = input("string")
-            note["content"] = input("string")
+#put 
+@app.put("/put/{id}")
+def update_note(id:int, note:Note):
+    for data in notes:
+        if data["id"] == id:
+            data["title"] = note.title
+            data["content"] = note.content
+            return data
 
+    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
 
-    
+#patch
+@app.patch("/patch/{id}")
+def update_note(id:int, note:Note):
+    for data in notes:
+        if data["id"] == id:
+            if note.title is not None:
+                data["title"] = note.title
+
+            if note.content is not None:
+                data["content"] = note.content
+
+            return data
+
+    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+
+@app.delete("/delete/{id}")
+def delete_note(id: int):
+    for data in notes:
+        if data["id"] == id:
+            notes.remove(data)
+
+            return "Deleted successful"
+    raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST)
