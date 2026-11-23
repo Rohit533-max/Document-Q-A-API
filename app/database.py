@@ -13,10 +13,11 @@ SessionLocal = sessionmaker(autoflush=False, autocommit = False, bind=engine)
 class Base(DeclarativeBase):
     pass
 
-#provides database sessions to api endpoints
+#database dependency
 def get_db():
     db = SessionLocal()
     try:
+        #to provide database session to api endpoint
         yield db
     finally:
         db.close()
