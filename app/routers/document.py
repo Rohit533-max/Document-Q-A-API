@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models.document import Document
+from app.models.user import User
 from app.schemas.document_schema import DocumentCreate, DocumentResponse, DocumentUpdate
 
 router = APIRouter(
@@ -20,13 +21,20 @@ def get_document(db: Session= Depends(get_db)):
             detail="Something went wrong while searching this Document."
         )
 
-@router.post("/", response_model=DocumentResponse)
-def add_document(docs : DocumentCreate, db: Session = Depends(get_db)):
+@router.post("/{user_id}", response_model=DocumentResponse)
+def add_document(user_id : int, docs : DocumentCreate, db: Session = Depends(get_db)):
     db_doc = Document(
         title = docs.title,
         content = docs.content,
-        owner_id= None
+        owner_id= user_id
     )
+    user = db.query(User).filter(User.id == user_id).first()
+
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User Not Found!"
+        )
     try:
         db.add(db_doc)
         db.commit()
@@ -82,7 +90,7 @@ def edit_document(id: int ,docs: DocumentUpdate, db : Session = Depends(get_db))
 
 @router.delete("/{id}")
 def delete_document(id : int, db: Session = Depends(get_db)):
-    db_doc = db.query(Document).filter(Document.id).first()
+    db_doc = db.query(Document).filter(Document.id == id).first()
 
     if not db_doc:
         raise HTTPException(

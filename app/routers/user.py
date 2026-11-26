@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models.user import User
 from app.schemas.user_schemas import UserCreate, UserResponse, UpdateUser
+from app.schemas.document_schema import DocumentResponse
 
 router = APIRouter(
     prefix="/users",
@@ -77,6 +78,17 @@ def edit_user(id: int, user: UpdateUser, db : Session = Depends(get_db)):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Something went wrong while updating User."
         )
+
+@router.get("/{user_id}/documents", response_model= list[DocumentResponse])
+def get_userdocuments(user_id:int, db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.id == user_id).first()
+
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found."
+        )
+    return user.documents
 
 
 @router.delete("/{id}")

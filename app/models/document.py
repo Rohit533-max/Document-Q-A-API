@@ -11,5 +11,5 @@ class Document(Base):
     content = Column(Text, nullable= False)
     created_at = Column(DateTime(timezone=True), server_default= func.now())
 
-    owner_id = Column(Integer, ForeignKey("user_table.id"), nullable=True)
+    owner_id = Column(Integer, ForeignKey("user_table.id"), nullable=False)
     owner = relationship("User", back_populates="documents")
