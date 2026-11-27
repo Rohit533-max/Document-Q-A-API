@@ -1,3 +1,10 @@
 __pycache__
 mydatabase.db
 venv
+.env
+
+# Local generated or temporary files
+*.pyc
+*.pyo
+*.db-journal
+*.sqlite-journal
